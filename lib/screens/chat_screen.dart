@@ -17,6 +17,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
   late String chatId;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -29,6 +30,69 @@ class _ChatScreenState extends State<ChatScreen> {
     List<String> ids = [uid1, uid2];
     ids.sort();
     return ids.join('_');
+  }
+
+  Future<void> _deleteChat() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Chat'),
+        content: const Text('Are you sure you want to delete this chat?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      final chatRef = FirebaseFirestore.instance.collection('chats').doc(chatId);
+      final messagesRef = chatRef.collection('messages');
+
+      final messagesSnapshot = await messagesRef.get();
+      final batch = FirebaseFirestore.instance.batch();
+      
+      for (var doc in messagesSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      batch.delete(chatRef);
+      await batch.commit();
+
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Chat deleted successfully', style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.black87,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete chat: $e', style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
   }
 
   void _sendMessage() async {
@@ -66,19 +130,20 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[700],
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         titleSpacing: 0,
+        elevation: 0,
         title: Row(
           children: [
             CircleAvatar(
-              backgroundColor: Colors.green[300],
+              backgroundColor: Colors.grey[200],
               child: Text(
                 widget.receiver.email.isNotEmpty
                     ? widget.receiver.email[0].toUpperCase()
                     : '?',
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Colors.black87,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -92,9 +157,21 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            onPressed: _isDeleting ? null : _deleteChat,
+          ),
+        ],
       ),
-      body: Column(
-        children: [
+      body: _isDeleting
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+              ),
+            )
+          : Column(
+              children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -146,7 +223,7 @@ class _ChatScreenState extends State<ChatScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSentByMe ? Colors.green[700] : Colors.grey[300],
+          color: isSentByMe ? Colors.black : Colors.grey[200],
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(18),
             topRight: const Radius.circular(18),
@@ -229,8 +306,8 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             const SizedBox(width: 8),
             Container(
-              decoration: BoxDecoration(
-                color: Colors.green[700],
+              decoration: const BoxDecoration(
+                color: Colors.black,
                 shape: BoxShape.circle,
               ),
               child: IconButton(

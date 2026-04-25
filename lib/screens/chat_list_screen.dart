@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/app_user.dart';
 import 'chat_screen.dart';
 import 'login_screen.dart';
+import 'profile_screen.dart';
 
 class ChatListScreen extends StatelessWidget {
   const ChatListScreen({Key? key}) : super(key: key);
@@ -23,10 +24,19 @@ class ChatListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chats'),
-        backgroundColor: Colors.green[700],
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _signOut(context),
@@ -64,11 +74,11 @@ class ChatListScreen extends StatelessWidget {
               final user = users[index];
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.green[300],
+                  backgroundColor: Colors.grey[200],
                   child: Text(
                     user.email.isNotEmpty ? user.email[0].toUpperCase() : '?',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Colors.black87,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
