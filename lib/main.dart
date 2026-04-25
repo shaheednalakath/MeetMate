@@ -22,7 +22,11 @@ class MessagingApp extends StatelessWidget {
       title: 'Simple Messenger',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.black,
+          primary: Colors.black,
+        ),
+        scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
       home: const LoginScreen(),
