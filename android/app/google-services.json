@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "385136272390",
+    "project_id": "webmsgcom",
+    "storage_bucket": "webmsgcom.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385136272390:android:920fd7a7549b1a41620f87",
+        "android_client_info": {
+          "package_name": "com.example.messaging_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9YHbXaqgYKEhcnvYHxaivH2plX8oWjEk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
